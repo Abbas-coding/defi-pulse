@@ -1,8 +1,12 @@
 # DeFi Pulse Project Documentation
 
-Status: planning baseline, prepared 2026-11-06. The repository currently contains documentation only. No source access, dataset, model, or performance result has been verified.
+Status: planning baseline, prepared 2026-11-06. The research implementation remains planned. A separate [ten-pool Graph learning demo](graph_demo.md) is implemented with offline tests; authenticated extraction has succeeded for ten pools and one UTC hour in the learning demo. No model or performance result exists.
 
 These documents develop the [project context](../DEFI_PULSE_CODEX_PROJECT_CONTEXT.md) into an actionable engineering and research plan. The context remains a reference, not an immutable specification. Departures require user approval before adoption; open choices are recorded explicitly.
+
+## Learning Demo
+
+Start with [The Graph setup and learning demo](graph_demo.md) to configure a local API key, retrieve one UTC hour for ten WETH pools, and inspect cached JSON and CSV. This is separate from the research pilot.
 
 ## Reading Order
 
