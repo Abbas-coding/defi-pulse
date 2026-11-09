@@ -1,8 +1,20 @@
 # DeFi Pulse Project Documentation
 
-Status: planning baseline, prepared 2026-11-06. The research implementation remains planned. A separate [ten-pool Graph learning demo](graph_demo.md) is implemented with offline tests; authenticated extraction has succeeded for ten pools and one UTC hour in the learning demo. No model or performance result exists.
+Status: planning baseline, prepared 2026-11-06. The research implementation has an initial source probe; labels, features, models, and the interface remain planned. A separate [ten-pool Graph learning demo](graph_demo.md) is implemented with offline tests; authenticated extraction has succeeded for ten pools and one UTC hour in the learning demo. A bounded 20-pool research source probe has now run; see [measured findings](feasibility_report.md) and [source evidence](source_schema.md). Endpoint feasibility remains unresolved. No model or performance result exists.
 
 These documents develop the [project context](../DEFI_PULSE_CODEX_PROJECT_CONTEXT.md) into an actionable engineering and research plan. The context remains a reference, not an immutable specification. Departures require user approval before adoption; open choices are recorded explicitly.
+
+## Three-Day Comparison
+
+The [day-1/day-2/day-3 comparison](three_day_activity.md) is complete for the same 200 pools. Most pools became quieter: 177 had no swaps on day 2 and 180 on day 3. Extending observation did not broaden the set reaching ten cumulative swaps. Prediction windows and target are unchanged.
+
+## 200-Pool Diagnostic
+
+The user-approved [200-pool diagnostic](diagnostic_200.md) is complete: 3,041 first-day swaps, 13 positive and 169 negative candidate outcomes, with 18 unresolved cases. Valuation review remains necessary before final labels or training.
+
+## Latest Research Evidence
+
+The [historical-state follow-up](historical_state_report.md) retrieved hour-24 and day-8 states for all 20 pilot pools. All cutoff timestamps matched, but USD pricing still requires review and there are no positive candidate outcomes in this cohort.
 
 ## Learning Demo
 

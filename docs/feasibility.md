@@ -2,13 +2,13 @@
 
 ## Current Status
 
-Not started. No endpoint, quota, historical availability, request count, or dataset completeness has been measured. This document defines evidence to collect, not pilot findings.
+Partially executed on 2026-11-09: 20 canonical pools, 43 live network attempts, cached replay verified. See [the source-probe report](feasibility_report.md). Reliable endpoint reconstruction and final labels remain unresolved, so the full pilot gate is not passed.
 
 ## Preparation
 
-- [ ] Establish instructor approval status before formal implementation.
-- [ ] Verify the selected deployment and account access without publishing credentials.
-- [ ] Inspect live schema and entity/filter types; preserve a schema fingerprint.
+- [x] Establish instructor approval status before formal implementation (user confirmed 2026-11-09).
+- [x] Verify the selected deployment and account access without publishing credentials (bounded authenticated pilot).
+- [x] Inspect live schema and entity/filter types; preserve a schema fingerprint for the fields used by the probe.
 - [ ] Confirm free usage conditions and select a conservative request cap.
 - [ ] Freeze pilot dates, maturity buffer, selection settings, and query versions.
 

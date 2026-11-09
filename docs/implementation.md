@@ -2,7 +2,7 @@
 
 ## Current State
 
-Documentation only. The following paths, commands, and tests are planned and do not yet exist. Build incrementally in the order below; do not generate placeholder implementations or simulated research results.
+The standalone Graph demo is implemented. A standard-library research source probe now lives in `src/defi_pulse/pilot.py`, with semantic tests in `tests/test_pilot.py`. It collects a bounded canonical cohort, early hourly histories, and provisional endpoint evidence; it does not create final labels or models. The broader packages below remain planned. Instructor approval was confirmed by the user on 2026-11-09.
 
 ## 1. Preparation and Source Probe
 

@@ -25,6 +25,8 @@ This endpoint does not capture every temporary collapse, prove liquidity removal
 
 Each model uses the available history throughout its window, not a single endpoint snapshot. Candidate features include initial/end TVL, changes, extrema, drawdown, cumulative volume/counts, activity patterns, and price return/variability. Only compute statistics supported by the observation count and source semantics.
 
+The approved missingness policy treats a valid absent hourly record as assumed no trading, with a separate flag preserving that assumption. Missing state measurements remain unknown; do not interpret the assumption as measured zero TVL or price. Source incompleteness remains a limitation.
+
 The 1h feature set may be smaller. Missing-value policies must not fabricate trends or volatility. Never use current lifetime pool aggregates, future observations, future outcomes, or later backfills. Use the same labels and comparable pool cohorts across windows; disclose coverage-driven differences.
 
 ## DS Protocol

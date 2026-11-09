@@ -24,7 +24,7 @@ Collect identity, creation timestamp/block, fee tier, token addresses/decimals, 
 
 Use UTC and creation-relative cutoffs. A creation time of 10:37 implies a 1h cutoff of 11:37. The full 11:00–12:00 aggregate is not admissible. Initially use buckets ending at or before the cutoff; permit the creation bucket only under verified no-precreation-activity semantics. Measure coverage loss. Exact timestamped events or historical state may improve alignment if feasible.
 
-Outcome states need both their requested as-of time and actual observation time. Daily buckets are not automatically exact day-8 observations. Define a justified staleness tolerance before labeling. Missing records are neither automatic zeros nor proof of inactivity. Never backfill early histories with later observations.
+Outcome states need both their requested as-of time and actual observation time. Daily buckets are not automatically exact day-8 observations. Define a justified staleness tolerance before labeling. Under the user-approved `empty_hour_assumed_no_trades_v1` policy, absent hourly records from successful, structurally valid API responses are assumed to indicate no trading. Preserve the absence as `quality = missing` with a separate `assumed_no_trades` flag. This is an assumption, not proof of complete source coverage. Do not zero-fill TVL, price, or liquidity, or interpret API errors/null collections as inactivity. Never backfill early histories with later observations.
 
 ## Table Contracts
 
