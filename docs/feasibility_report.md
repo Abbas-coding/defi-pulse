@@ -1,5 +1,7 @@
 # Initial Research Source Probe — 2026-11-09
 
+> **Historical evidence:** this report describes the experiment run before the 2026-11-10 modeling update. Any classification labels/counts refer to the former **80% decline** target. They have not been recomputed for the approved **30%** target or regression task. See [the current specification](modeling_update.md).
+
 ## Follow-up
 
 The [historical-state check](historical_state_report.md) subsequently retrieved all 40 endpoint states. The hourly-only findings below describe the initial probe. Historical lookup improves endpoint coverage but does not establish pricing reliability or provide positive outcome examples.

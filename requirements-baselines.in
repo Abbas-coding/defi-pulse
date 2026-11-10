@@ -1,0 +1,5 @@
+# Optional modeling dependencies; collectors need only the Python standard library.
+# Exact direct and transitive versions are recorded in requirements-baselines.lock.
+scikit-learn==1.9.1
+pandas==3.1.1
+pyarrow==26.0.1

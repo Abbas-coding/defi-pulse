@@ -2,7 +2,7 @@
 
 ## Purpose and Users
 
-Help teammates and instructors inspect the dataset, understand early behavior, and evaluate historical predictions. Use a small local Streamlit interface after the data and models are validated.
+Help teammates and instructors inspect the dataset, understand early behavior, and evaluate historical predictions. Use cleaned Parquet/CSV prediction and SHAP extracts for the Tableau dashboard after data and model validation. The earlier local Streamlit interface remains optional.
 
 ## Data Science Explorer
 
@@ -18,11 +18,15 @@ Present a small set of DS findings with sample sizes and limitations. Provide fe
 4. Display model version, score/probability status, supported risk band, and top explanatory features.
 5. Offer a separate “Reveal historical outcome” section showing hour-24/day-8 TVL and the observed label.
 
-Inference must not read the outcome. Every displayed score must be traceable to a stored bundle and feature artifact. Explain the event precisely: severe day-8 USD-TVL deterioration relative to hour 24.
+Inference must not read the outcome. Every displayed score must be traceable to a stored bundle and feature artifact. Explain the event precisely: at least 30% day-8 USD-TVL deterioration relative to hour 24.
+
+## Continuous Change and Explainability
+
+For the same pool/window and split, show predicted signed TVL percentage change from hour 24 to day 8, separately from the classification probability. Identify the regression model and target transform, and reveal observed change only through the outcome display path. Global SHAP views use summary/beeswarm and bar plots; pool views use waterfall/force plots. Distinguish classification margin/probability units from regression percentage-point or transformed-target units. Read task-aware versioned extracts according to the [Tableau contracts](modeling_update.md#tableau-export-contracts).
 
 ## Evaluation View
 
-An optional compact view compares models/windows with prevalence, event counts, precision-recall results, confusion matrices, and probability-quality plots. Make weak or inconclusive results visible. Avoid a headline accuracy number detached from the baseline.
+An optional compact view compares models/windows with prevalence, event counts, precision-recall results, confusion matrices, and probability-quality plots, plus RMSE, MAE, and R² for regression. Display errors in percentage points and include dummy baselines for both tasks. Make weak or inconclusive results visible. Avoid a headline accuracy number detached from the baseline.
 
 ## Empty and Failure States
 

@@ -1,6 +1,12 @@
 # DeFi Pulse
 
-An academic Data Science and Machine Learning project investigating early liquidity-value deterioration in historical Ethereum Uniswap v3 pools. The research pipeline has an initial bounded feasibility collector; no trained risk model or measured performance exists yet.
+## Approved Modeling Update — 2026-11-10
+
+The modeling specification now uses **at least 30% USD-TVL deterioration** from hour 24 to day 8 for classification and adds **continuous TVL percentage-change regression** over the same interval. Both tasks retain the first 1h/6h/24h histories and the specified chronological 70/15/15 split with an eight-day embargo. Mann–Whitney U and chi-square remain the specified statistical tests.
+
+Planned outputs include task-specific SHAP explanations and cleaned Parquet/CSV prediction and explanation extracts for Tableau. See the [approved specification](docs/modeling_update.md). The original collectors and reports retain historical **80%** candidate outputs. The new offline [baseline module](docs/baselines.md) separately builds versioned **30%**/regression candidate targets and runs explicit experimental baselines. Final USD label validation, tree models, and SHAP remain pending.
+
+An academic Data Science and Machine Learning project investigating early liquidity-value deterioration in historical Ethereum Uniswap v3 pools. The research pipeline has an initial bounded feasibility collector; fixed exploratory baselines now run on provisional targets; no validated risk model exists yet.
 
 ## Start With the Graph Learning Demo
 
@@ -71,10 +77,26 @@ PYTHONPATH=src python3 -m defi_pulse.three_day_activity --max-requests 200 --off
 
 Outputs under `data/diagnostic_200/three_day_activity/` include `daily_activity.csv` (one pool per day), `pool_comparison.csv` (one pool per row), and `summary.json`. Daily changes and cumulative totals are separate. This diagnostic does not change the prediction windows or target. See the [three-day findings](docs/three_day_activity.md).
 
+## Optional Baseline Modeling Environment
+
+Collectors still require only the standard library. The new offline baseline module uses a separate Python 3.12 environment (tested with 3.12.3):
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-baselines.lock
+PYTHONPATH=src .venv/bin/python -m defi_pulse.baselines
+PYTHONPATH=src .venv/bin/python -m defi_pulse.baselines --allow-provisional-targets
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+The default command audits and exports data without fitting models because USD valuation quality is unresolved. The explicit experimental command fits fixed Dummy/Logistic Regression and mean/median Dummy/Ridge baselines for 1h/6h/24h using provisional 30%/percentage-change targets. Outputs are isolated under `data/baselines_30pct/audit/` and `data/baselines_30pct/experimental/`, in CSV/Parquet plus model bundles and manifests. It sends no API requests and preserves the collected diagnostic artifacts.
+
+All 200 pools are development data because their outcomes have already been explored. Results are not a final untouched-test claim, calibrated risks, or verified financial labels. See [the baseline report](docs/baselines.md). Direct modeling dependencies are in `requirements-baselines.in`; all installed runtime dependencies are pinned in `requirements-baselines.lock`. Ruff formatting settings are in `pyproject.toml`; Ruff is not required for collection or included in the modeling runtime lock.
+
 ## Verification
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-No application build or model-training command is implemented. The initial research collector is under `src/defi_pulse/`; see the [documentation index](docs/README.md).
+No application build is implemented. The baseline modeling command above is available; tree models, SHAP, and final-label training remain pending. The initial research collector is under `src/defi_pulse/`; see the [documentation index](docs/README.md).

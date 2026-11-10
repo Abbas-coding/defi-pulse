@@ -9,7 +9,7 @@
 | D01 | Ethereum Mainnet, Uniswap v3, TOKEN/WETH | Baseline | Verify source and WETH identity during discovery |
 | D02 | One canonical pool per token | Baseline; algorithm open | Verify earliest-pool lookup beyond candidate date range |
 | D03 | Full available 1h/6h/24h histories | Baseline | Quantify safe hourly coverage; determine need for events |
-| D04 | Common hour-24→day-8, ≥80% USD-TVL decline | Baseline | Freeze exact endpoint reconstruction and definition version |
+| D04 | Common hour-24→day-8, ≥30% USD-TVL decline | User-approved replacement, 2026-11-10 | `tvl_decline_30pct_h24_day8_v2`; old 80% code/artifacts remain historical until explicit migration |
 | D05 | Verified zero day-8 TVL | Open; user decision required | Formula implies positive label; context tests reject zero outcome. Proposed distinction: valid measured zero versus invalid/missing zero |
 | D06 | The Graph as primary source | Baseline preference | Live endpoint, schema, historical access, free terms, actual account availability |
 | D07 | 20–30-pool pilot before scale-up | Baseline | Review measured completeness, costs, and selection losses |
@@ -20,6 +20,21 @@
 | D12 | Instructor approval and actual rubric | Instructor approval confirmed by user, 2026-11-09; original rubric not independently reviewed | Formal research implementation authorized; obtain course-owned files for final submission |
 | D13 | Final model and SHAP display semantics | Open | Evaluation and compatibility; distinguish estimator score from calibrated output |
 | D14 | Python version, lock tool, exact dependencies | Open implementation detail | Environment inspection and compatible reproducible setup |
+
+## Approved DS/ML Revision (2026-11-10)
+
+The user explicitly authorized the [30% classification, regression, SHAP, and Tableau specification](modeling_update.md) and requested Markdown updates only. This supersedes the old 80% target; existing measured counts and collector code are not recomputed or relabeled here.
+
+| ID | Decision | Status |
+|---|---|---|
+| D15 | Add signed hour-24/day-8 percentage-change regression, with a documented log-ratio alternative if needed | Approved design; implementation planned |
+| D16 | Same chronological 70/15/15 split and eight-day embargo for classification/regression; preserve 1h/6h/24h features, ETL, GraphQL, Mann–Whitney U, and chi-square methods | Preserved specification; final modeling/statistical components are not implemented yet |
+| D17 | Classification: Dummy, Logistic Regression, Random Forest Classifier, XGBoost Classifier; F1/Precision/Recall/PR-AUC/ROC-AUC/Confusion Matrix | Approved design |
+| D18 | Regression: mean/median Dummy, Linear/Ridge, Random Forest Regressor, XGBoost Regressor; RMSE/MAE/R² | Approved design |
+| D19 | `shap` global summary/beeswarm/bar and local waterfall/force for selected compatible models in both tasks | Approved design; record output scale and training-background provenance |
+| D20 | Cleaned Parquet/CSV predictions and global/local SHAP summaries for Tableau; retain explicit task/window/model/target/split versions | Approved design; exports planned |
+
+Endpoint validity, pricing, and verified-zero policies remain separate quality gates. Historical counts under the 80% definition do not establish class balance for the new target. This documentation edit installs no dependencies, changes no Python code, and runs no models or data recollection.
 
 ## Approved Missingness Policy (2026-11-09)
 
@@ -40,6 +55,10 @@ Fetch individual swap events with deterministic ID pagination for `[creation, cr
 The user authorized checking separate days 1, 2, and 3 for the same frozen 200-pool cohort. Reuse cached day-1 events, retrieve swaps for hours 24–48 and 48–72 at the original indexed snapshot, and compare daily swap counts, volumes, active hours, and delayed starts. Keep cumulative counts separate from daily changes. New extraction is capped at 200 network attempts, including retries, with bounded event pagination.
 
 This approval covers a descriptive diagnostic only. It does not approve 48h/72h model inputs, a shifted outcome target, activity-based pool exclusions, or model training. Existing labels and early windows remain the baseline.
+
+## Approved Baseline Implementation (2026-11-10)
+
+The user authorized the next baseline milestone: candidate target preparation, supported activity features for 1h/6h/24h, the specified shared chronological 70/15/15 split with an eight-day embargo, and fixed Dummy/Logistic Regression plus mean/median Dummy/Ridge models. Source ETL and historical outputs are preserved. Pricing is not independently verified, so the default run is audit-only; the executed experimental run explicitly opts into provisional candidate targets and leaves final labels null. No imputation, activity filtering, clipping, tuning, or calibration is performed. All 200 previously explored pools are development data. See [measured results and fixed configuration](baselines.md).
 
 ## Change Procedure
 

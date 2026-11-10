@@ -1,5 +1,7 @@
 # 200-Pool Diagnostic — 2026-11-09
 
+> **Historical evidence:** this report describes the experiment run before the 2026-11-10 modeling update. Any classification labels/counts refer to the former **80% decline** target. They have not been recomputed for the approved **30%** target or regression task. See [the current specification](modeling_update.md).
+
 The expanded sample contains actual first-day swap histories for 200 canonical
 TOKEN/WETH pools, plus 400 historical endpoint states. Both candidate outcome
 classes are present, but most pools are quiet and only 13 meet the deterioration

@@ -1,5 +1,7 @@
 # Three-Day Activity Comparison — 2026-11-09
 
+> **Historical evidence:** this report describes the experiment run before the 2026-11-10 modeling update. Any classification labels/counts refer to the former **80% decline** target. They have not been recomputed for the approved **30%** target or regression task. See [the current specification](modeling_update.md).
+
 Extending observation to three days did not resolve sparse trading for most
 pools in this fixed cohort. Of 200 pools, the same 32 reached ten cumulative
 swaps at 24h and 72h. Most pools traded less on subsequent days; a few busy

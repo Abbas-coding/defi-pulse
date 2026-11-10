@@ -33,11 +33,15 @@ Outcome states need both their requested as-of time and actual observation time.
 | `pools` | One selected pool, network-qualified address | Token identities, creation, fee, cohort, source, eligibility |
 | `pool_hours` | Pool and UTC bucket start | Metrics, units, source ID, bucket bounds, quality flag |
 | `outcome_states` | Pool and requested as-of time | TVL, observed time, age, source ID, quality |
-| `labels` | One pool | Hour-24/day-8 values, ratio, nullable target, definition version |
+| `labels` | One pool | Hour-24/day-8 values, ratio, nullable `y_class` (30% decline), nullable `y_reg` (percentage change), both definition versions |
 | `features_1h/6h/24h` | One eligible pool per window | Cutoff, coverage, permitted features |
-| `model_scores` | Pool, window, model version | Raw/calibrated score, band, split, calibration status |
+| `model_scores` | Pool, window, model version | Task identity, class score/decision or regression percentage-change prediction, split, model/target versions, quality and calibration/transform status |
 
 Store outcome labels separately from feature matrices. Pool/token identifiers support joins and grouping, not default predictive inputs.
+
+## Planned Tableau Extracts
+
+Preserve existing ETL and feature contracts. Add versioned cleaned Parquet/CSV prediction extracts keyed by pool, window, task, model version, and shared split. Include `y_class`, `y_reg`, class score/probability and decision, `predicted_tvl_change_pct`, endpoint quality, and definition versions. Observed outcomes are display/evaluation fields, never inference inputs. Export separate global feature-level mean absolute SHAP summaries and local pool-feature signed SHAP contributions with base value and output scale; avoid ambiguous joins that duplicate prediction rows. Details: [approved contracts](modeling_update.md#tableau-export-contracts).
 
 ## Extraction and Provenance
 

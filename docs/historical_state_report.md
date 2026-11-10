@@ -1,5 +1,7 @@
 # Historical TVL Follow-up — 2026-11-09
 
+> **Historical evidence:** this report describes the experiment run before the 2026-11-10 modeling update. Any classification labels/counts refer to the former **80% decline** target. They have not been recomputed for the approved **30%** target or regression task. See [the current specification](modeling_update.md).
+
 Historical pool-state queries retrieved all 40 requested TVL values for the
 existing 20-pool cohort. This resolves the absence of hourly records as a
 retrieval blocker for these endpoints. Stored USD valuations still need quality

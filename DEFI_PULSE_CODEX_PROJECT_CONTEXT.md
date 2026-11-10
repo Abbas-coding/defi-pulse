@@ -1,5 +1,9 @@
 # DeFi Pulse — Master Project Context & Implementation Specification for Codex
 
+> **Subsequent implementation, 2026-11-10:** the [baseline pipeline](docs/baselines.md) now builds separate versioned candidate targets and activity features, applies the shared embargoed splits, and runs fixed experimental classification/regression baselines. Source pricing remains unverified; final labels, tree models, SHAP, and named DS statistical tests remain pending. Statements below about a documentation-only update describe the earlier specification revision.
+
+> **Current revision: 2026-11-10.** The latest user-approved modeling specification is [docs/modeling_update.md](docs/modeling_update.md): 30% classification, percentage-change regression, SHAP for both tasks, and Tableau extracts. This revision updates design intent only. Existing collectors and historical 80% outputs are preserved; modeling remains planned.
+
 > **Repository:** `defi-pulse`  
 > **Project type:** Combined undergraduate **Data Science (DS)** + **Machine Learning (ML)** research/engineering project  
 > **ML project title:** **DeFi Pulse: Explainable Early Liquidity Risk Assessment in Uniswap v3**  
@@ -63,9 +67,9 @@ For each **historically newly created ERC-20/WETH pool**, the team will:
 1. Obtain its creation time, token/pair identity, and relevant hourly pool data from a **Uniswap v3 subgraph** indexed by **The Graph**.
 2. Analyze its **full first 1, 6, and 24 hours of observable activity**, not merely the value at three individual timestamps.
 3. Produce descriptive/statistical findings (the **Data Science** submission).
-4. Train supervised classifiers to predict a common, future, seven-day deterioration outcome (the **Machine Learning** submission).
+4. Train supervised classifiers for ≥30% hour-24-to-day-8 deterioration and regressors for continuous percentage change over the same endpoint interval (the **Machine Learning** submission).
 5. Present a **calibrated model-estimated risk probability**, a **Low / Medium / High** band, **influential model features**, and a **plain-language explanation**.
-6. Demonstrate selected historical case studies in a lightweight Streamlit interface, clearly separating historical inputs, model predictions, and observed future results.
+6. Export classification/regression predictions and SHAP summaries to cleaned Parquet/CSV for Tableau historical case studies, clearly separating inputs, predictions, and observed future results; the earlier Streamlit interface is optional.
 
 **The project is NOT:** a cryptocurrency price predictor, a rug-pull/fraud detector, an investment recommendation engine, a trading bot, or a production financial risk platform.
 
@@ -77,7 +81,7 @@ A pool `ABC/WETH` was created on July 24, 2026. For training:
 - Data from creation to **hour 6** builds the 6h feature row.
 - Data from creation to **hour 24** builds the 24h feature row.
 - The **hour-24 TVL** and **day-8 TVL** determine the **same future label** for all three models.
-- An 80% or greater USD-TVL decrease from hour 24 to day 8 is the current **primary research definition** of a severe deterioration event.
+- A 30% or greater USD-TVL decrease from hour 24 to day 8 is the current **primary research definition** of a severe deterioration event.
 
 At prediction time, each model sees **only its permitted early-period features**. The day-8 result remains hidden.
 
@@ -99,15 +103,15 @@ At prediction time, each model sees **only its permitted early-period features**
 | Pool selection | Prefer **earliest eligible TOKEN/WETH Uniswap v3 pool per target token**; specify the eligibility algorithm precisely before selection |
 | Input history | Full first **1 hour**, **6 hours**, and **24 hours** (hourly aggregates, optional selected events) |
 | Target horizon | **7 days after hour 24**, evaluated at **day 8 from creation** |
-| Primary outcome | Binary: severe **USD-TVL deterioration**, not fraud |
-| ML task | Supervised **binary classification** with probability estimates |
-| Main models | Dummy baseline, Logistic Regression, Random Forest, XGBoost |
-| Explainability | Global/local **SHAP** analysis of selected trained model |
+| Primary outcomes | Binary **≥30% USD-TVL deterioration** and continuous **USD-TVL percentage change**, not fraud |
+| ML task | Supervised **binary classification** plus continuous **TVL percentage-change regression** |
+| Main models | Classification: Dummy, Logistic Regression, Random Forest Classifier, XGBoost Classifier; regression: mean/median Dummy, Linear/Ridge, Random Forest Regressor, XGBoost Regressor |
+| Explainability | Global/local **SHAP** analysis of selected compatible classification and regression models |
 | Risk bands | **Low / Medium / High**; boundaries chosen **using validation data only** |
 | Primary data API | The Graph → Ethereum Uniswap v3 **subgraph** → GraphQL |
 | Local storage | Raw JSON/JSONL cache, cleaned **Parquet**, optionally **DuckDB** |
 | Compute | Local Python/Jupyter on CPU |
-| Visualization | Matplotlib/Plotly; small **Streamlit** historical-case dashboard |
+| Visualization | Matplotlib/Plotly; cleaned Parquet/CSV predictions and SHAP summaries for **Tableau**; earlier Streamlit demo optional |
 | Pilot | **20–30** historical pools before any scale-up |
 | Target corpus | Approximately **300–1,000 usable pools**, **conditional on feasibility and class balance** |
 | Spending | **$0 mandatory**; use free quotas/tools; stop before any paid requirement |
@@ -289,12 +293,12 @@ Define **primary binary target**:
 
 ```python
 # Pseudocode: only after validating nonmissing, positive, time-aligned TVL
-severe_deterioration = int(
-    tvl_usd_day8 <= 0.20 * tvl_usd_hour24
+y_class = int(
+    tvl_usd_day8 <= 0.70 * tvl_usd_hour24
 )
 ```
 
-- `1` = severe deterioration (at least **80% fall in USD TVL**).
+- `1` = severe deterioration (at least **30% fall in USD TVL**).
 - `0` = no severe deterioration under this **specific endpoint definition**.
 - Do not label a case if `TVL_24h` is zero/invalid or the day-8 state is untrustworthy/unavailable.
 - This is an **endpoint** definition: a pool that dips severely then recovers by day 8 may be labeled `0`. State this as a limitation.
@@ -305,9 +309,17 @@ severe_deterioration = int(
 **Mathematical definition:**
 
 ```text
-y = 1 if TVL_USD(t0 + 8 days) / TVL_USD(t0 + 24 hours) <= 0.20
+y_class = 1 if TVL_USD(t0 + 8 days) / TVL_USD(t0 + 24 hours) <= 0.70
     0 otherwise
 ```
+
+### 5.2a Continuous regression target — approved 2026-11-10
+
+```text
+y_reg = ((TVL_USD(t0 + 8 days) - TVL_USD(t0 + 24 hours)) / TVL_USD(t0 + 24 hours)) * 100
+```
+
+Use the same validated endpoints and saved chronological split as classification. Preserve missing/invalid-outcome and zero-policy safeguards. A log-ratio alternative for extreme right-skew requires explicit transform/zero handling, definition versioning, and percentage-change output after inverse transformation. Targets never enter inference features. See [the approved update](docs/modeling_update.md).
 
 ### 5.3 Why this is only a proxy for liquidity risk
 
@@ -323,15 +335,15 @@ Uniswap v3 `tvlUSD` is the USD value of pool-held assets. It can decline because
 
 ### 5.4 Suggested sensitivity/robustness checks
 
-After the main model is working, test alternate thresholds (e.g., 50%, 70%, and 80% decline), alternative minimum initial TVL thresholds, and subgroup outcomes by fee tier / liquidity size. **Do not tune the final headline target retrospectively to maximize scores**; preregister the primary 80% endpoint definition and treat alternatives as robustness checks.
+After the main model is working, test alternate thresholds (e.g., 50%, 70%, and the former 80% decline), alternative minimum initial TVL thresholds, and subgroup outcomes by fee tier / liquidity size. **Do not tune the final headline target retrospectively to maximize scores**; preregister the primary 30% endpoint definition and treat alternatives as robustness checks.
 
 ### 5.5 Temporal split and leakage controls
 
 - Sort pools by `created_at_utc`.
 - Train on older cohorts; validate on later cohorts; test on newest eligible cohorts.
-- A simple initial split is ~70% / 15% / 15% by **creation date**; use actual date ranges, not random row assignments.
+- Retain the specified 70% / 15% / 15% split by **creation date**; use actual date ranges, not random row assignments.
 - Ensure **all rows for the same pool/token** remain in the same split.
-- **Purge/embargo overlapping target windows** at train/validation/test boundaries (suggest ≥8-day gap based on the fixed label horizon), or otherwise prove that evaluation labels cannot leak across boundary-dependent features/selection.
+- **Purge/embargo overlapping target windows** at train/validation/test boundaries (retain the specified 8-day embargo based on the fixed label horizon), and verify that evaluation labels cannot leak across boundary-dependent features/selection. Reuse the same saved split assignments for classification and regression.
 - Fit scalers, imputers, feature selectors, calibrators, risk thresholds, and hyperparameter choices using only permitted **training/validation** periods.
 - The chronological **test set is never used to choose thresholds or models**.
 - Capture market regime/date-range differences; avoid treating random K-fold cross-validation as the default.
@@ -494,9 +506,11 @@ created_at_utc
 tvl_usd_hour24
 tvl_usd_day8
 tvl_ratio_day8_over_hour24
-severe_deterioration_80pct   # 0 or 1, nullable when invalid
+y_class                     # 0 or 1 at the 30% threshold; nullable when invalid
+y_reg                       # signed percentage change; nullable when invalid
 label_quality
 label_definition_version
+regression_definition_version
 ```
 
 **`features_1h` / `features_6h` / `features_24h`** (one row per pool **per window**, if eligible)
@@ -612,6 +626,8 @@ For the **1h model**, many temporal statistics may be undefined because little h
 
 Report **actual** confidence intervals, effect sizes, p-values (if used), and limitations. Do not write conclusions until the data support them. Be mindful that multiple pools may behave similarly during shared market conditions.
 
+Preserve **Mann–Whitney U** for the specified continuous-variable comparisons and **chi-square** for categorical comparisons. The approved 30% labels change group membership, so outcome-dependent tests must be recomputed without changing the test methods. No statistical-test implementation or results are claimed by this specification.
+
 ### 9.3 DS notebooks
 
 Recommended:
@@ -635,6 +651,8 @@ The data and graph creation logic should live in reusable `src/` modules where r
 - **XGBoost** — tabular boosting comparator; use CPU-friendly parameters and moderate search budget.
 
 **Deep learning, GNNs, LSTMs, neural time-series encoders and trading agents are excluded from the six-week core scope.**
+
+**Regression comparators:** Linear/Ridge Regression, Random Forest Regressor, and XGBoost Regressor, against mean/median Dummy Regressor. Both tasks reuse the same 70/15/15 chronological pool split with the eight-day embargo and the same permitted feature windows.
 
 ### 10.2 Reproducibility and fitting
 
@@ -663,6 +681,8 @@ At minimum:
 
 Include a **simple baseline** and class prevalence alongside every report. Avoid a headline “accuracy” number without context. Add uncertainty intervals/bootstrap appropriate to time cohorts if feasible. Do not make calibration claims with very few positive outcomes.
 
+**Regression metrics:** RMSE, MAE, and R². Evaluate percentage-change predictions in percentage points for MAE/RMSE and report target-transform metadata. Explain regression in its actual output scale; do not apply classification risk bands or probability calibration to regression outputs.
+
 ### 10.4 Probability calibration and risk bands
 
 Classifiers' `predict_proba` values are **not automatically calibrated risks**. Inspect holdout reliability and Brier score. Where enough data are available, use **sigmoid/Platt calibration** on data separate from model fitting (or a proven temporally safe equivalent). Isotonic regression may overfit with a small dataset; justify the choice.
@@ -684,7 +704,7 @@ model score → (optional) validated calibrator → probability p
 
 ### 10.5 Explainability and explanations
 
-Use SHAP for global and per-pool influence summaries on the final tree-based model (or appropriate supported explainer). Key requirements:
+Use the `shap` library for global and per-pool influence summaries on the selected best compatible tree/linear classification and regression models. Generate summary/beeswarm and bar plots globally, plus waterfall/force plots locally. Export SHAP summaries and regression predictions alongside classification outputs in cleaned Parquet/CSV for Tableau. Preserve task, window, split, model/target versions, base values, and explanation units. Key requirements:
 
 - Distinguish **features increasing versus decreasing the model output**.
 - Check the **explanation output space** (raw margin/log-odds vs probability) before showing numerical SHAP contributions. Do not assert that SHAP values add to probability percentages unless the explainer is configured/validated in probability space.
@@ -706,7 +726,7 @@ Why this score?
 - Price volatility was elevated.
 - Sustained trading activity offset some risk.
 
-Outcome being assessed: >=80% drop in USD TVL at day 8 vs hour 24.
+Outcome being assessed: >=30% drop in USD TVL at day 8 vs hour 24.
 This is a research estimate, not a prediction of fraud or investment advice.
 ```
 
@@ -731,7 +751,7 @@ Recommended:
 
 ## 11. Demonstration Dashboard (MVP Only)
 
-Use **Streamlit** for a small offline/historical demonstration. No real-time continuous ingestion, account system, wallet connection, trade execution, React frontend, or production hosting required.
+Use versioned cleaned Parquet/CSV prediction and SHAP extracts for a **Tableau** historical dashboard. The earlier **Streamlit** interface described below remains optional. No real-time continuous ingestion, account system, wallet connection, trade execution, React frontend, or production hosting required.
 
 ### Page A — Data Science explorer
 
@@ -771,7 +791,7 @@ Use **Streamlit** for a small offline/historical demonstration. No real-time con
 - **XGBoost** for gradient-boosted trees.
 - **SHAP** for explanations.
 - **Matplotlib or Plotly** for plots (avoid unnecessary frontend infrastructure).
-- **Streamlit** for the small offline dashboard.
+- **Tableau** consumes cleaned Parquet/CSV prediction and SHAP extracts; **Streamlit** remains optional.
 - **Jupyter Notebook** for instructor-required deliverables.
 - **pytest, Ruff**, and **mypy** (optional) for tests/quality.
 - **Git/GitHub** for version control.
@@ -933,7 +953,8 @@ Codex may choose Typer/argparse or small scripts, but must document actual comma
 
 - [ ] Chronological split with embargo and grouping by token/pool.
 - [ ] DummyClassifier + Logistic Regression for all feasible windows.
-- [ ] Random Forest + XGBoost with modest tuning.
+- [ ] Random Forest + XGBoost classifiers with modest tuning.
+- [ ] Mean/median Dummy Regressor, Linear/Ridge, Random Forest Regressor, and XGBoost Regressor on the same saved split; RMSE, MAE, and R².
 - [ ] Same positive label across the three experiments.
 - [ ] Precision/recall/F1/PR-AUC, prevalence, confusion matrix, Brier/calibration.
 - [ ] Check results by sample size and cohort; log failures honestly.
@@ -944,7 +965,7 @@ Codex may choose Typer/argparse or small scripts, but must document actual comma
 
 - [ ] Validate raw risk probability reliability; calibrate on permitted validation data if feasible.
 - [ ] Choose/provisionally label risk bands from validation-only evidence.
-- [ ] Compute SHAP on final compatible model.
+- [ ] Compute global summary/beeswarm/bar and local waterfall/force SHAP for selected compatible classification and regression models; preserve each output scale.
 - [ ] Test narrative templates against feature contribution signs and available feature values.
 - [ ] Document claims that **cannot** be inferred (fraud, investment returns, causal withdrawal).
 
@@ -952,7 +973,7 @@ Codex may choose Typer/argparse or small scripts, but must document actual comma
 
 ### Phase 5 — Demo, academic deliverables, and handoff
 
-- [ ] Minimal Streamlit DS and ML pages.
+- [ ] Versioned Tableau classification/regression and global/local SHAP extracts; optional Streamlit DS and ML pages.
 - [ ] Historical held-out example showing prediction **before** revealing day-8 outcome.
 - [ ] ML and DS Jupyter notebooks run with cached data.
 - [ ] DS report, ML report, reproducibility README and dataset card.
@@ -1042,8 +1063,8 @@ Construct synthetic pool records with exaggerated future values:
 
 ### 16.3 Label tests
 
-- `TVL_24h = 100`, `TVL_day8 = 20` ⇒ label `1` (exact 80% decline).
-- `TVL_24h = 100`, `TVL_day8 = 21` ⇒ label `0`.
+- `TVL_24h = 100`, `TVL_day8 = 70` ⇒ label `1` (exact 30% decline).
+- `TVL_24h = 100`, `TVL_day8 = 71` ⇒ label `0`.
 - Zero, negative, NaN, or stale/untrusted outcome TVL ⇒ invalid / missing label, **not automatic deterioration**.
 - Day-8 timing must be based on creation + 8 days, not calendar midnight eight days later unless clearly documented as an approximation.
 - Consistent label regardless of observation window.
@@ -1193,9 +1214,11 @@ The six-week project is complete only if the team can demonstrate all of the fol
 - [ ] A reproducible filter selects Ethereum Uniswap v3 **TOKEN/WETH** pools and keeps a canonical pool per target token.
 - [ ] An auditable The Graph/GraphQL collector retrieves selective historical data without scanning raw Ethereum blocks or exceeding budget.
 - [ ] Complete/partial availability, gap handling, and source limitations are documented.
-- [ ] The fixed **hour-24-to-day-8 80% USD-TVL** target is reconstructed and quality-checked.
+- [ ] The fixed **hour-24-to-day-8 30% USD-TVL** target is reconstructed and quality-checked.
 - [ ] Feature builders produce **1h, 6h, 24h** data with **tested no-leakage guarantees**.
-- [ ] The DS project has defensible EDA, statistics, findings, and a dataset card.
+- [ ] The DS project has defensible EDA, unchanged Mann–Whitney U/chi-square methods, findings, and a dataset card.
+- [ ] Regression percentage-change targets and predictions share the classification splits; mean/median Dummy, Linear/Ridge, Random Forest Regressor, and XGBoost Regressor have RMSE/MAE/R² reports.
+- [ ] Versioned cleaned Parquet/CSV prediction and global/local SHAP extracts support Tableau for both tasks.
 - [ ] Dummy, Logistic Regression, Random Forest, and XGBoost receive a chronological evaluation.
 - [ ] Metrics include **PR-AUC, precision, recall, F1, confusion matrix, and probability quality**.
 - [ ] A calibrated probability is presented **only if calibrated and supported by holdout evidence**; otherwise status is explicitly experimental/uncalibrated.
@@ -1210,7 +1233,7 @@ The six-week project is complete only if the team can demonstrate all of the fol
 
 ## 23. Codex Handoff Prompt — Copy This into a New Codex Session
 
-> You are working in the `defi-pulse` repository. Read `PROJECT_CONTEXT.md` in full. We are building a six-week, three-person academic Data Science + Machine Learning project focused on **Ethereum Mainnet / Uniswap v3 / historical ERC-20-WETH pools**. The main ML target is **80% or greater decrease in pool USD TVL between hour 24 and day 8 after pool creation**; 1h, 6h, and 24h experiments share that label, but features must use only history available by each cutoff. We will eventually produce calibrated risk probabilities (only if validated), Low/Medium/High bands, and SHAP-based non-causal explanations. **Do not** build a blockchain, download raw blocks, invent an endpoint, or build a real-time trading system. **First**, inspect the repository, check faculty approval status if relevant, find/validate the current Uniswap v3 Ethereum subgraph and schema from official sources, and make a short plan for a 20–30-pool extraction feasibility pilot. Explain exactly which fields and timestamp constraints you will request, how you will handle missing hourly records and hour-boundary leakage, and how you will stay within free query limits. Implement only the agreed first milestone, add tests, write a feasibility report, and report blockers honestly. Preserve existing files and code unless there is a documented reason to change them.
+> You are working in the `defi-pulse` repository. Read `PROJECT_CONTEXT.md` in full. We are building a six-week, three-person academic Data Science + Machine Learning project focused on **Ethereum Mainnet / Uniswap v3 / historical ERC-20-WETH pools**. The classification target is **30% or greater decrease in pool USD TVL between hour 24 and day 8 after pool creation**, and regression predicts the signed percentage change over those endpoints; 1h, 6h, and 24h experiments share that label, but features must use only history available by each cutoff. We will eventually produce calibrated risk probabilities (only if validated), Low/Medium/High bands, and SHAP-based non-causal explanations. **Do not** build a blockchain, download raw blocks, invent an endpoint, or build a real-time trading system. **First**, inspect the repository, check faculty approval status if relevant, find/validate the current Uniswap v3 Ethereum subgraph and schema from official sources, and make a short plan for a 20–30-pool extraction feasibility pilot. Explain exactly which fields and timestamp constraints you will request, how you will handle missing hourly records and hour-boundary leakage, and how you will stay within free query limits. Implement only the agreed first milestone, add tests, write a feasibility report, and report blockers honestly. Preserve existing files and code unless there is a documented reason to change them.
 
 ---
 
@@ -1222,7 +1245,7 @@ The six-week project is complete only if the team can demonstrate all of the fol
 | D-002 | Single DEX: Uniswap v3 | **Locked** | Consistent concentrated-liquidity AMM source |
 | D-003 | ERC-20/WETH; one canonical pool per token | **Locked intent**; selection algorithm requires validation | Avoid mismatched quote assets/repeated target-token samples |
 | D-004 | Model uses 1h/6h/24h **histories** | **Locked** | Captures trends rather than three snapshots |
-| D-005 | Common target = hour-24-to-day-8 >=80% USD-TVL drop | **Locked from ML proposal** | Comparable early-warning experiments |
+| D-005 | Common target = hour-24-to-day-8 >=30% USD-TVL drop | **User-approved revision, 2026-11-10** | Supersedes the earlier 80% proposal definition; comparable early-warning experiments |
 | D-006 | Primary data through The Graph subgraph | **Preferred**, requires live feasibility | Avoid raw-block ingestion |
 | D-007 | Pilot 20–30 pools before scaling | **Locked** | Test costs and historical completeness |
 | D-008 | Probabilities, risk bands, SHAP, explanations | **Locked intent**, dependent on statistical support | Interpretability and practical financial framing |
@@ -1231,3 +1254,17 @@ The six-week project is complete only if the team can demonstrate all of the fol
 | D-011 | Calibration choice/risk bands | **Open**, validation-dependent | Prevent misleading financial probabilities |
 
 **Final instruction to Codex:** implement the scientifically defensible **smallest complete system**, prioritizing verified data and no-leakage evaluation. More lines of code, more blockchains, more models, and more UI pages do **not** make this project better if the historical data, target, or validation are wrong.
+
+
+## 25. Approved Modeling Revision — 2026-11-10
+
+The user explicitly approved replacing the old 80% event definition with a **30%** decline, adding regression over the same hour-24/day-8 endpoints, and extending SHAP and Tableau extracts. The active sections above reflect that change. The detailed current contract is [docs/modeling_update.md](docs/modeling_update.md).
+
+- Classification version: `tvl_decline_30pct_h24_day8_v2`; `y_class = 1` when `TVL_day8 <= 0.70 * TVL_hour24` for valid endpoints.
+- Regression version: `tvl_change_pct_h24_day8_v1`; signed percentage change. Linear/Ridge, Random Forest Regressor, XGBoost Regressor versus mean/median Dummy; RMSE, MAE, R².
+- Classification models remain Logistic Regression, Random Forest Classifier, XGBoost Classifier versus Dummy; F1, Precision, Recall, PR-AUC, ROC-AUC, Confusion Matrix. Keep existing probability-quality safeguards and distinguish PR-AUC from average precision.
+- Preserve collectors/ETL, full first 1h/6h/24h feature logic, chronological 70/15/15 allocation with the eight-day embargo, and Mann–Whitney U/chi-square methods. Both tasks share saved split IDs. Record actual counts after exclusions/embargo.
+- SHAP for selected compatible tree/linear models in both tasks: global summary/beeswarm/bar, local waterfall/force; save signed contributions, feature values, base value, scale, task/window/model keys, and training-background provenance.
+- Export `predicted_tvl_change_pct` alongside classification outputs plus separate global/local SHAP tables in versioned cleaned Parquet/CSV for Tableau. Future outcomes stay outside inference inputs.
+
+Implementation status: collectors and diagnostics exist; final feature tables, chronological split code, named statistical tests, model training, SHAP, and Tableau modeling extracts remain planned. This revision changes Markdown only. Existing code and cached outputs still use the **old 80%** candidate definition. Historical diagnostic counts remain unchanged and explicitly historical; later code must build new versioned targets and rerun all dependent analyses. The original instructor-approval confirmation remains recorded; this update records the user's requested scope rather than claiming a newly reviewed course proposal.
