@@ -1,6 +1,6 @@
 # Research and Evaluation Methodology
 
-Current specification: [approved update, 2026-11-10](modeling_update.md). Classification and regression share validated endpoints, feature windows, and split assignments. Modeling and statistical-test code remain planned.
+Current specification: [approved update, 2026-11-10](modeling_update.md). Classification and regression share validated endpoints, feature windows, and split assignments. Fixed experimental baselines and training-only Mann–Whitney U/chi-square comparisons are implemented in the [executed notebook](../notebooks/01_defi_pulse_end_to_end.ipynb). Verified financial labels, tree models, SHAP, and final untouched evaluation remain pending.
 
 ## Questions
 

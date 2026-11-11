@@ -1,5 +1,7 @@
 # First Classification and Regression Baselines — 2026-11-10
 
+Follow-up (2026-11-11): the [executed notebook](../notebooks/01_defi_pulse_end_to_end.ipynb) now presents these same results with EDA, training, 19 charts, and training-only statistical comparisons. Original baseline results below are preserved.
+
 This implementation prepares versioned 30%/percentage-change candidate targets,
 shared chronological splits, and first-1h/6h/24h activity feature tables entirely
 from cached diagnostic data. Fixed exploratory baselines are available behind

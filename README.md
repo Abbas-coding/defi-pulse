@@ -28,6 +28,8 @@ See [the demo guide](docs/graph_demo.md) for explicit hour selection, offline re
 - `src/defi_pulse/`: bounded research feasibility collector.
 - `tests/`: offline semantic tests using synthetic API responses.
 - `docs/`: implementation plan, architecture, methodology, design, decisions, and demo instructions.
+- `notebooks/`: executed baseline/EDA walkthrough and setup guide.
+- `scripts/execute_notebook.py`: reproducible notebook execution and HTML export.
 - `data/demo/`: generated cache and exports, ignored by Git.
 - `DEFI_PULSE_CODEX_PROJECT_CONTEXT.md`: original project context.
 
@@ -76,6 +78,23 @@ PYTHONPATH=src python3 -m defi_pulse.three_day_activity --max-requests 200 --off
 ```
 
 Outputs under `data/diagnostic_200/three_day_activity/` include `daily_activity.csv` (one pool per day), `pool_comparison.csv` (one pool per row), and `summary.json`. Daily changes and cumulative totals are separate. This diagnostic does not change the prediction windows or target. See the [three-day findings](docs/three_day_activity.md).
+
+## Notebook: EDA, Charts, Preprocessing, and Training
+
+Open [notebooks/01_defi_pulse_end_to_end.ipynb](notebooks/01_defi_pulse_end_to_end.ipynb) for the complete implemented baseline walkthrough, including executed tables and charts. It covers source quality, target/feature preparation, chronological splits, training-only Mann–Whitney U and chi-square checks, baseline training, evaluation curves, residuals, coefficients, and pool predictions. It reads the existing cached dataset and sends no Graph queries.
+
+```bash
+.venv/bin/python -m pip install -r requirements-notebooks.lock
+.venv/bin/jupyter lab notebooks/01_defi_pulse_end_to_end.ipynb
+```
+
+Select the project `.venv` kernel and **Restart Kernel and Run All**, or execute headlessly:
+
+```bash
+.venv/bin/python scripts/execute_notebook.py
+```
+
+The runner also creates a browser-readable HTML copy at `data/notebook_outputs/defi_pulse_baseline/notebook.html`, with standalone PNG/SVG charts in `charts/`. All generated notebook data, models, and figures are isolated from the original diagnostic/CLI outputs. See [notebook setup and artifact guide](notebooks/README.md). The notebook uses provisional targets and does not claim final financial labels, calibrated risks, tree-model results, or SHAP values.
 
 ## Optional Baseline Modeling Environment
 

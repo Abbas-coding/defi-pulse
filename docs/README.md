@@ -1,5 +1,9 @@
 # DeFi Pulse Project Documentation
 
+## Executed Notebook — 2026-11-11
+
+The [end-to-end baseline notebook](../notebooks/01_defi_pulse_end_to_end.ipynb) brings cached-data loading, quality checks, EDA/charts, targets, splits, preprocessing, training, evaluation, and exports together. [Run/read instructions](../notebooks/README.md) include JupyterLab, VS Code, and standalone HTML. Training-only Mann–Whitney U and chi-square comparisons are now implemented with explicit small-cell limitations. Trees, SHAP, verified financial labels, and final untouched evaluation remain pending.
+
 ## Implemented Baselines — 2026-11-10
 
 The [first baseline run](baselines.md) now prepares 30%/regression candidate targets, activity feature tables, and shared embargoed splits. Fifteen fixed experimental models fitted; results are poor or inconclusive, pricing remains unverified, and final labels remain unset. Trees, SHAP, named DS statistical tests, and final untouched evaluation remain pending.

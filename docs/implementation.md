@@ -4,6 +4,10 @@
 
 The standalone Graph demo is implemented. A standard-library research source probe now lives in `src/defi_pulse/pilot.py`, with semantic tests in `tests/test_pilot.py`. It collects a bounded canonical cohort, early hourly histories, and provisional endpoint evidence; it does not create final labels or models. The broader packages below remain planned. Instructor approval was confirmed by the user on 2026-11-09.
 
+## Notebook Implementation — 2026-11-11
+
+The [executed notebook](../notebooks/01_defi_pulse_end_to_end.ipynb) includes all implemented baseline stages, EDA, 19 chart figures, training-only Mann–Whitney U and chi-square checks, preprocessing, training, evaluation, and exports. `src/defi_pulse/statistical_analysis.py` supplies tested training-only comparisons and small-cell safeguards; `scripts/execute_notebook.py` executes with the project kernel and exports HTML. Notebook dependencies have a separate complete lockfile. See [run/read instructions](../notebooks/README.md).
+
 ## Baseline Implementation — 2026-11-10
 
 `src/defi_pulse/data_preparation.py` now constructs versioned candidate targets, fixed chronological splits with an eight-day embargo, and supported first-1h/6h/24h activity features. `src/defi_pulse/baselines.py` provides audit-only default behavior and explicit experimental Dummy/Logistic Regression/Dummy mean/median/Ridge training, CSV/Parquet exports, saved pipelines, and manifests. See [executed results](baselines.md). Final verified targets, tree models, SHAP, and DS statistical-test implementation remain pending.
